@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import CustomUser, City
-
+from django.utils import timezone
 
 @admin.register(City)
 class CityAdmin(admin.ModelAdmin):
@@ -17,13 +17,10 @@ class CustomUserAdmin(admin.ModelAdmin):
     actions = ["approve_users"]
 
     def approve_users(self, request, queryset):
-        queryset.update(is_approved=True)
-        user = CustomUser.objects.get(id=user_id)
-
-        user.is_approved = True
-        user.approved_by = request.user   # ← THIS STORES ADMIN
-        user.approved_at = timezone.now()
-
-        user.save()
+        for user in queryset:
+            user.is_approved = True
+            user.approved_by = request.user
+            user.approved_at = timezone.now()
+            user.save()
 
     approve_users.short_description = "Approve selected users"

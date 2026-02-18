@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
 
 
 # =========================
@@ -71,7 +72,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     full_name = models.CharField(max_length=150)
     phone = models.CharField(max_length=15)
-    license_number = models.CharField(max_length=100)
+    license_number = models.CharField(max_length=100, blank=True, null=True)
     certificate = models.FileField(upload_to='certificates/', null=True, blank=True)
 
     is_active = models.BooleanField(default=True)
