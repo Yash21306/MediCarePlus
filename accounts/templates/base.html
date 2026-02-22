@@ -9,6 +9,7 @@
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 </head>
 <body>
@@ -22,6 +23,41 @@
 <div class="right-panel">
     {% block content %}{% endblock %}
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("deleteModal");
+    const modalText = document.getElementById("modal-text");
+    const confirmBtn = document.getElementById("confirmDelete");
+    const closeBtn = document.getElementById("closeModal");
+    const deleteForm = document.getElementById("delete-form");
+
+    let deleteUrl = "";
+
+    document.querySelectorAll(".open-delete-modal").forEach(button => {
+        button.addEventListener("click", function () {
+            const patientId = this.dataset.id;
+            const patientName = this.dataset.name;
+
+            deleteUrl = `/patients/delete/${patientId}/`;
+
+            modalText.textContent = `Are you sure you want to delete "${patientName}"?`;
+            modal.style.display = "flex";
+        });
+    });
+
+    confirmBtn.addEventListener("click", function () {
+        deleteForm.action = deleteUrl;
+        deleteForm.submit();
+    });
+
+    closeBtn.addEventListener("click", function () {
+        modal.style.display = "none";
+    });
+
+});
+</script>
 
 </body>
 </html>
