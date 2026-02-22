@@ -12,13 +12,19 @@
     </p>
 
     <div style="margin-top:20px;">
+        <a href="{% url 'add_patient' %}" class="btn btn-primary">+ Add Patient</a>
+        <a href="{% url 'patient_list' %}" class="btn btn-success">+ View Patients</a>       
+    </div>
+
+    <div style="margin-top:20px;">
+      
         <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:48%;">
+            <div class="dashboard-card" style="background:rgba(255,255,255,0.08); padding:25px; border-radius:20px; width:48%;">
                 <h3>Patients</h3>
-                <p style="opacity:0.7;">0 Registered</p>
+                <p style="opacity:0.7;">{{ patient_count }} Registered</p>
             </div>
 
-            <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:48%;">
+            <div class="dashboard-card" style="background:rgba(255,255,255,0.08); padding:25px; border-radius:20px; width:48%;">
                 <h3>Prescriptions</h3>
                 <p style="opacity:0.7;">0 Issued</p>
             </div>

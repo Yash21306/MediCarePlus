@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from .forms import DoctorRegisterForm, PharmacistRegisterForm
 from django.contrib.auth.decorators import login_required
+from patients.models import Patient
 
 def doctor_register(request):
     if request.method == 'POST':
@@ -61,9 +62,12 @@ def doctor_dashboard(request):
 
     if not request.user.is_approved:
         return redirect('pending')
+    
+    patient_count = Patient.objects.filter(created_by=request.user).count()
 
     context = {
         "user": request.user,
+        "patient_count": patient_count,
     }
     return render(request, "accounts/doctor_dashboard.html", context)
 
@@ -75,9 +79,12 @@ def pharmacist_dashboard(request):
 
     if not request.user.is_approved:
         return redirect('pending')
+    
+    patient_count = Patient.objects.filter(created_by=request.user).count()
 
     context = {
         "user": request.user,
+        "patient_count": patient_count,
     }
     return render(request, "accounts/pharmacist_dashboard.html", context)
 
