@@ -33,6 +33,10 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'accounts',
     'patients',
+    'prescriptions',
+    'consultations',
+    'pharmacy',
+    'billing',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

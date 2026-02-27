@@ -1,0 +1,188 @@
+from django.db import transaction
+from django.core.exceptions import ValidationError
+from django.db.models import Sum
+from billing.models import InvoiceLog
+from pharmacy.models import Batch
+from billing.models import InvoiceItemBatch
+from django.utils import timezone
+from consultations.models import Prescription
+
+
+class InvoiceService:
+
+    @staticmethod
+    @transaction.atomic
+    def process_payment(invoice, performed_by=None):
+        """
+        Called after a payment is created.
+        If invoice becomes fully paid → process it.
+        """
+        total_paid = invoice.payments.aggregate(
+            total=Sum("amount")
+        )["total"] or 0
+
+        if total_paid < invoice.total_amount:
+            return
+
+        if invoice.status == "PAID":
+            return
+
+        InvoiceService.pay_invoice(invoice, performed_by)
+
+
+    @staticmethod
+    @transaction.atomic
+    def pay_invoice(invoice, performed_by=None):
+        """
+        Deduct stock using FIFO batches (expiry aware)
+        """
+        if invoice.status == "PAID":
+            return invoice
+
+        today = timezone.now().date()
+
+        items = invoice.items.select_related(
+            "medicine"
+        ).select_for_update()
+
+        for item in items:
+            required_qty = item.quantity
+
+            # Lock available non-expired batches (FIFO by expiry)
+            batches = (
+                Batch.objects
+                .select_for_update()
+                .filter(
+                    medicine=item.medicine,
+                    expiry_date__gte=today,
+                    quantity__gt=0
+                )
+                .order_by("expiry_date")
+            )
+
+            total_available = sum(b.quantity for b in batches)
+
+            if total_available < required_qty:
+                raise ValidationError(
+                    f"Not enough non-expired stock for {item.medicine.name}"
+                )
+
+            # Deduct FIFO
+            for batch in batches:
+                if required_qty <= 0:
+                    break
+
+                deduct_qty = min(batch.quantity, required_qty)
+
+                batch.quantity -= deduct_qty
+                batch.save(update_fields=["quantity"])
+
+                # Record allocation
+                InvoiceItemBatch.objects.create(
+                    invoice_item=item,
+                    batch=batch,
+                    quantity=deduct_qty
+                )
+
+                required_qty -= deduct_qty
+
+        invoice.status = "PAID"
+        invoice.save(update_fields=["status"])
+
+        # Create audit log
+        InvoiceLog.objects.create(
+            invoice=invoice,
+            action="PAID",
+            performed_by=performed_by
+        )
+
+        InvoiceService._recalculate_prescription_status(
+            invoice.prescription
+        )
+
+        return invoice
+
+
+    @staticmethod
+    @transaction.atomic
+    def cancel_invoice(invoice, performed_by=None):
+        """
+        Cancel a PAID invoice and restore stock to original batches
+        """
+        if invoice.status != "PAID":
+            raise ValidationError(
+                "Only PAID invoices can be cancelled."
+            )
+
+        # Lock invoice items
+        items = invoice.items.select_for_update()
+
+        for item in items:
+            # Get batch allocations
+            allocations = item.batch_allocations.select_related(
+                "batch"
+            ).select_for_update()
+
+            for allocation in allocations:
+                batch = allocation.batch
+                batch.quantity += allocation.quantity
+                batch.save(update_fields=["quantity"])
+
+            # Delete allocation records
+            allocations.delete()
+
+        invoice.status = "CANCELLED"
+        invoice.save(update_fields=["status"])
+
+        # Create audit log
+        InvoiceLog.objects.create(
+            invoice=invoice,
+            action="CANCELLED",
+            performed_by=performed_by
+        )
+
+        InvoiceService._recalculate_prescription_status(
+            invoice.prescription
+        )
+
+        return invoice
+
+
+    @staticmethod
+    def _recalculate_prescription_status(prescription):
+
+        all_items = prescription.items.all()
+
+        any_billed = False
+        fully_billed = True
+
+        for p_item in all_items:
+            total_billed = (
+                p_item.invoice_items
+                .filter(invoice__status="PAID")
+                .aggregate(total=Sum("quantity"))["total"] or 0
+            )
+
+            if total_billed > 0:
+                any_billed = True
+
+            if total_billed < p_item.quantity_prescribed:
+                fully_billed = False
+
+        if fully_billed:
+            prescription.status = "BILLED"
+        elif any_billed:
+            prescription.status = "PARTIALLY_BILLED"
+        else:
+            prescription.status = "PENDING"
+
+        prescription.save(update_fields=["status"])
+
+        consultation = prescription.consultation
+
+        if prescription.status == "BILLED":
+            consultation.status = "CLOSED"
+        else:
+            consultation.status = "OPEN"
+
+        consultation.save(update_fields=["status"])

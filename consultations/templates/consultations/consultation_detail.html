@@ -1,0 +1,47 @@
+<h2>Consultation Detail</h2>
+
+<p><strong>Visit Number:</strong> {{ consultation.visit_number }}</p>
+<p><strong>Date:</strong> {{ consultation.consultation_date }}</p>
+<p><strong>Status:</strong> {{ consultation.status }}</p>
+
+<hr>
+
+<h3>Vitals</h3>
+<p>Blood Pressure: {{ consultation.blood_pressure }}</p>
+<p>Temperature: {{ consultation.temperature }}</p>
+<p>Pulse: {{ consultation.pulse }}</p>
+
+<hr>
+
+<h3>Symptoms</h3>
+<p>{{ consultation.symptoms }}</p>
+
+<h3>Notes</h3>
+<p>{{ consultation.notes }}</p>
+
+<hr>
+
+<h3>Diagnoses</h3>
+
+<ul>
+    {% for diagnosis in consultation.diagnoses.all %}
+        <li>
+            {{ diagnosis.name }}
+            {% if diagnosis.is_primary %}
+                (Primary)
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>No diagnoses added.</li>
+    {% endfor %}
+</ul>
+
+{% if consultation.status == "OPEN" and user.role == "DOCTOR" %}
+    <hr>
+    <a href="{% url 'add_diagnosis' consultation.pk %}">
+        ➕ Add Diagnosis
+    </a>    
+    <a href="{% url 'add_prescription' consultation.pk %}">
+        ➕ Add Prescription
+    </a>
+{% endif %}

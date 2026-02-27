@@ -10,22 +10,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
 </head>
 <body>
 
 <div class="left-panel">
     <h1>MediCarePlus</h1>
-    <p>Smart Healthcare Management Platform<br>
-    Secure. Modern. Scalable.</p>
+    <p>
+        Smart Healthcare Management Platform<br>
+        Secure. Modern. Scalable.
+    </p>
 </div>
 
 <div class="right-panel">
     {% block content %}{% endblock %}
 </div>
 
+<!-- ✅ Load Chart.js FIRST -->
+<script src="{% static 'js/chart.js' %}"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    /* ===============================
+       SAFE DELETE MODAL SCRIPT
+    ================================ */
 
     const modal = document.getElementById("deleteModal");
     const modalText = document.getElementById("modal-text");
@@ -35,29 +43,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let deleteUrl = "";
 
-    document.querySelectorAll(".open-delete-modal").forEach(button => {
-        button.addEventListener("click", function () {
-            const patientId = this.dataset.id;
-            const patientName = this.dataset.name;
+    // Only run if modal exists (prevents dashboard crash)
+    if (modal) {
 
-            deleteUrl = `/patients/delete/${patientId}/`;
+        document.querySelectorAll(".open-delete-modal").forEach(button => {
+            button.addEventListener("click", function () {
+                const patientId = this.dataset.id;
+                const patientName = this.dataset.name;
 
-            modalText.textContent = `Are you sure you want to delete "${patientName}"?`;
-            modal.style.display = "flex";
+                deleteUrl = `/patients/delete/${patientId}/`;
+
+                modalText.textContent =
+                    `Are you sure you want to delete "${patientName}"?`;
+
+                modal.style.display = "flex";
+            });
         });
-    });
 
-    confirmBtn.addEventListener("click", function () {
-        deleteForm.action = deleteUrl;
-        deleteForm.submit();
-    });
+        if (confirmBtn) {
+            confirmBtn.addEventListener("click", function () {
+                deleteForm.action = deleteUrl;
+                deleteForm.submit();
+            });
+        }
 
-    closeBtn.addEventListener("click", function () {
-        modal.style.display = "none";
-    });
+        if (closeBtn) {
+            closeBtn.addEventListener("click", function () {
+                modal.style.display = "none";
+            });
+        }
+    }
 
 });
 </script>
+
+{% block extra_js %}{% endblock %}
 
 </body>
 </html>

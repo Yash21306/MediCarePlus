@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import login_required
 from .forms import PatientForm
 from .models import Patient
 from django.db.models import Q
+from django.views.generic import DetailView
+from accounts.mixins import RoleRequiredMixin
+from consultations.models import Consultation
 
 @login_required
 def add_patient(request):
@@ -86,3 +89,21 @@ def delete_patient(request, pk):
         return redirect('patient_list')
 
     return render(request, 'patients/delete_patient.html', {'patient': patient})
+
+class PatientDetailView(RoleRequiredMixin, DetailView):
+    model = Patient
+    template_name = 'patients/patient_detail.html'
+    context_object_name = 'patient'
+
+    allowed_roles = ['DOCTOR', 'PHARMACIST']
+
+    def get_queryset(self):
+        # Security: Only allow users to see their own created patients
+        return Patient.objects.filter(created_by=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['consultations'] = Consultation.objects.filter(
+            patient=self.object
+        )
+        return context

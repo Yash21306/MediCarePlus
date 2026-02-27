@@ -1,0 +1,20 @@
+<h2>Add Diagnoses</h2>
+
+<p><strong>Visit:</strong> {{ consultation.visit_number }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <table>
+        {% for form in formset %}
+        <tr>
+            <td>{{ form.name }}</td>
+            <td>{{ form.description }}</td>
+            <td>Primary? {{ form.is_primary }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <button type="submit">Save Diagnoses</button>
+</form>

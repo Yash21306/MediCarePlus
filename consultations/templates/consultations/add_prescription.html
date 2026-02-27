@@ -1,0 +1,36 @@
+<h2>Add Prescription</h2>
+
+<p><strong>Visit:</strong> {{ consultation.visit_number }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <hr>
+
+    {{ formset.management_form }}
+
+    <table>
+        <tr>
+            <th>Medicine</th>
+            <th>Dosage</th>
+            <th>Frequency</th>
+            <th>Duration</th>
+            <th>Quantity</th>
+            <th>Instructions</th>
+        </tr>
+
+        {% for form in formset %}
+        <tr>
+            <td>{{ form.medicine }}</td>
+            <td>{{ form.dosage }}</td>
+            <td>{{ form.frequency }}</td>
+            <td>{{ form.duration_days }}</td>
+            <td>{{ form.quantity_prescribed }}</td>
+            <td>{{ form.instructions }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <button type="submit">Save Prescription</button>
+</form>

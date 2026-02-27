@@ -3,6 +3,14 @@ from django.shortcuts import render, redirect
 from .forms import DoctorRegisterForm, PharmacistRegisterForm
 from django.contrib.auth.decorators import login_required
 from patients.models import Patient
+from pharmacy.models import Medicine
+from pharmacy.services import (
+    get_low_stock_medicines,
+    get_near_expiry_batches,
+    get_expired_batches
+)
+from billing.services.report_service import ReportService
+import json
 
 def doctor_register(request):
     if request.method == 'POST':
@@ -82,10 +90,43 @@ def pharmacist_dashboard(request):
     
     patient_count = Patient.objects.filter(created_by=request.user).count()
 
+    top_data = ReportService.top_selling_medicines()
+
+    labels = [item["medicine__name"] for item in top_data]
+    values = [item["total_sold"] for item in top_data]
+
+    trend_labels, trend_values = ReportService.last_7_days_revenue()
+
     context = {
         "user": request.user,
         "patient_count": patient_count,
+
+        "total_medicines": Medicine.objects.count(),
+        "low_stock_count": get_low_stock_medicines().count(),
+        "near_expiry_count": get_near_expiry_batches().count(),
+        "expired_count": get_expired_batches().count(),    
+
+        "total_revenue": ReportService.total_revenue(),
+        "today_revenue": ReportService.today_revenue(),
+        "today_sales_count": ReportService.today_sales_count(),
+        "monthly_revenue": ReportService.monthly_revenue(),
+
+        "top_medicines": ReportService.top_selling_medicines(), 
+
+        "top_labels_json": json.dumps(labels),
+        "top_values_json": json.dumps(values),  
+
+        "trend_labels_json": json.dumps(trend_labels),
+        "trend_values_json": json.dumps(trend_values),                 
     }
+
+    context.update({
+        "trend_labels_json": json.dumps(trend_labels),
+        "trend_values_json": json.dumps(trend_values),
+        "trend_labels_json": json.dumps(trend_labels),
+        "trend_values_json": json.dumps(trend_values),
+    })
+
     return render(request, "accounts/pharmacist_dashboard.html", context)
 
 def home(request):

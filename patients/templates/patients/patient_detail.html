@@ -1,0 +1,54 @@
+<h2>Patient Profile</h2>
+
+<div class="patient-card">
+    <h3>{{ patient.full_name }}</h3>
+    <p><strong>Age:</strong> {{ patient.age }}</p>
+    <p><strong>Gender:</strong> {{ patient.gender }}</p>
+    <p><strong>Phone:</strong> {{ patient.phone }}</p>
+    <p><strong>City:</strong> {{ patient.city }}</p>
+    <p><strong>Address:</strong> {{ patient.address }}</p>
+    <p><strong>Medical History:</strong> {{ patient.medical_history }}</p>
+</div>
+
+<hr>
+
+<div class="actions">
+    {% if user.role == "DOCTOR" %}
+        <a href="{% url 'consultation_create' patient.pk %}" class="btn btn-primary">
+            ➕ New Consultation
+        </a>
+    {% endif %}
+</div>
+
+<hr>
+
+<h3>Consultation History</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Visit Number</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Doctor</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for consultation in consultations %}
+        <tr>
+            <td>
+                <a href="{% url 'consultation_detail' consultation.pk %}">
+                    {{ consultation.visit_number }}
+                </a>
+            </td>            
+            <td>{{ consultation.consultation_date }}</td>
+            <td>{{ consultation.status }}</td>
+            <td>{{ consultation.doctor }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No consultations yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
