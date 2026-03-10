@@ -1,39 +1,114 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Doctor Dashboard{% endblock %}
+
+{% block sidebar %}
+
+<a href="{% url 'doctor_dashboard' %}" class="active">Dashboard</a>
+<a href="{% url 'patients:patient_list' %}">Patients</a>
+<a href="{% url 'consultations:consultation_list' %}">Consultations</a>
+
+{% endblock %}
+
+
 {% block content %}
 
+<!-- DOCTOR STATS -->
 
-<div class="card" style="width: 600px;">
-    <span class="role-badge">Doctor Dashboard</span>
+<div class="dashboard-grid small-cards">
 
-    <h2>Welcome, {{ user.full_name }}</h2>
+<div class="dashboard-card card-green">
+<h3>🧑 Total Patients</h3>
+<p>{{ total_patients }}</p>
+</div>
 
-    <p class="message-text">
-        Manage your patients, prescriptions, and appointments here.
-    </p>
+<div class="dashboard-card card-teal">
+<h3>📅 Today's Consultations</h3>
+<p>{{ today_consultations }}</p>
+</div>
 
-    <div style="margin-top:20px;">
-        <a href="{% url 'add_patient' %}" class="btn btn-primary">+ Add Patient</a>
-        <a href="{% url 'patient_list' %}" class="btn btn-success">+ View Patients</a>       
-    </div>
+<div class="dashboard-card card-purple">
+<h3>🩺 Open Consultations</h3>
+<p>{{ open_consultations }}</p>
+</div>
 
-    <div style="margin-top:20px;">
-      
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-            <div class="dashboard-card" style="background:rgba(255,255,255,0.08); padding:25px; border-radius:20px; width:48%;">
-                <h3>Patients</h3>
-                <p style="opacity:0.7;">{{ patient_count }} Registered</p>
-            </div>
+<div class="dashboard-card">
+<h3>💊 Pending Prescriptions</h3>
+<p>{{ pending_prescriptions }}</p>
+</div>
 
-            <div class="dashboard-card" style="background:rgba(255,255,255,0.08); padding:25px; border-radius:20px; width:48%;">
-                <h3>Prescriptions</h3>
-                <p style="opacity:0.7;">0 Issued</p>
-            </div>
-        </div>
-    </div>
+</div>
 
-    <a href="{% url 'logout' %}">
-        <button>Logout</button>
-    </a>
+
+<!-- RECENT CONSULTATIONS -->
+
+<div class="chart-card">
+
+<h3>🩺 Recent Consultations</h3>
+
+<table class="report-table">
+
+<tr>
+<th>Visit No</th>
+<th>Patient</th>
+<th>Date</th>
+<th>Status</th>
+</tr>
+
+{% for c in recent_consultations %}
+
+<tr>
+<td>{{ c.visit_number }}</td>
+<td>{{ c.patient.full_name }}</td>
+<td>{{ c.consultation_date|date:"d M Y" }}</td>
+<td>{{ c.status }}</td>
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="4">No consultations yet</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+
+<!-- RECENT PATIENTS -->
+
+<div class="chart-card">
+
+<h3>👨‍👩‍👧 Recent Patients</h3>
+
+<table class="report-table">
+
+<tr>
+<th>Name</th>
+<th>Phone</th>
+<th>City</th>
+</tr>
+
+{% for patient in recent_patients %}
+
+<tr>
+<td>{{ patient.full_name }}</td>
+<td>{{ patient.phone }}</td>
+<td>{{ patient.city }}</td>
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="3">No patients yet</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
 </div>
 
 {% endblock %}

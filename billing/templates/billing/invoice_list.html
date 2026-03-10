@@ -1,0 +1,146 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Invoices{% endblock %}
+
+{% block sidebar %}
+<a href="{% url 'pharmacist_dashboard' %}">Dashboard</a>
+<a href="{% url 'billing:prescription_queue' %}">Prescriptions</a>
+<a href="{% url 'billing:invoice_list' %}" class="active">Invoices</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="chart-card">
+
+<h3>Invoices</h3>
+
+<!-- ================= FILTER BAR ================= -->
+
+<form method="get" style="margin-bottom:20px; display:flex; gap:10px;">
+
+<input 
+type="text" 
+name="q" 
+placeholder="Search patient..." 
+value="{{ request.GET.q }}"
+style="padding:8px 12px;border-radius:8px;border:none;"
+>
+
+<select 
+name="status"
+style="padding:8px 12px;border-radius:8px;border:none;"
+>
+
+<option value="">All Status</option>
+
+<option value="DRAFT"
+{% if request.GET.status == "DRAFT" %}selected{% endif %}
+>
+Draft
+</option>
+
+<option value="PAID"
+{% if request.GET.status == "PAID" %}selected{% endif %}
+>
+Paid
+</option>
+
+</select>
+
+<button type="submit" class="btn-primary">
+Filter
+</button>
+
+</form>
+
+
+<!-- ================= INVOICE TABLE ================= -->
+
+<table class="report-table">
+
+<thead>
+<tr>
+<th>Invoice No</th>
+<th>Patient</th>
+<th>Status</th>
+<th style="text-align:right;">Total</th>
+<th>Date</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for inv in invoices %}
+
+<tr>
+
+<td>
+<a href="{% url 'billing:invoice_detail' inv.pk %}">
+{{ inv.invoice_number }}
+</a>
+</td>
+
+<td>
+{{ inv.prescription.consultation.patient.full_name }}
+</td>
+
+<td>
+
+{% if inv.status == "PAID" %}
+
+<span class="status-paid">PAID</span>
+
+{% else %}
+
+<span class="status-draft">DRAFT</span>
+
+{% endif %}
+
+</td>
+
+<td style="text-align:right;">
+₹ {{ inv.total_amount }}
+</td>
+
+<td>
+{{ inv.created_at|date:"d M Y" }}
+</td>
+
+<td>
+
+<div class="table-actions">
+
+<a href="{% url 'billing:invoice_detail' inv.pk %}" class="btn-view">
+View
+</a>
+
+{% if inv.status != "PAID" %}
+
+<a href="{% url 'billing:add_payment' inv.pk %}" class="btn-pay">
+Pay
+</a>
+
+{% endif %}
+
+</div>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="6">No invoices found</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

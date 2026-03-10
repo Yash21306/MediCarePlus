@@ -1,0 +1,73 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Edit Patient{% endblock %}
+
+{% block sidebar %}
+<a href="{% url 'doctor_dashboard' %}">Dashboard</a>
+<a href="{% url 'patients:patient_list' %}" class="active">Patients</a>
+<a href="{% url 'consultations:consultation_list' %}">Consultations</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="chart-card form-card">
+
+<h3>✏️ Edit Patient</h3>
+
+<form method="post" class="patient-form">
+{% csrf_token %}
+
+<div class="form-grid">
+
+<div class="form-group">
+<label>Full Name</label>
+{{ form.full_name }}
+</div>
+
+<div class="form-group">
+<label>Age</label>
+{{ form.age }}
+</div>
+
+<div class="form-group">
+<label>Gender</label>
+{{ form.gender }}
+</div>
+
+<div class="form-group">
+<label>Phone</label>
+{{ form.phone }}
+</div>
+
+<div class="form-group">
+<label>City</label>
+{{ form.city }}
+</div>
+
+<div class="form-group full-width">
+<label>Address</label>
+{{ form.address }}
+</div>
+
+<div class="form-group full-width">
+<label>Medical History</label>
+{{ form.medical_history }}
+</div>
+
+</div>
+
+<br>
+
+<button type="submit" class="btn btn-primary">
+💾 Update Patient
+</button>
+
+<a href="{% url 'patients:patient_list' %}" class="btn btn-consult">
+← Back
+</a>
+
+</form>
+
+</div>
+
+{% endblock %}

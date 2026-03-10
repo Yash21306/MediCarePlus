@@ -1,0 +1,62 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Prescription Queue{% endblock %}
+
+{% block sidebar %}
+
+<a href="{% url 'pharmacist_dashboard' %}">Dashboard</a>
+<a href="{% url 'billing:prescription_queue' %}" class="active">Prescriptions</a>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="chart-card">
+
+<h3>💊 Prescriptions Waiting for Billing</h3>
+
+<table class="report-table">
+
+<tr>
+<th>Patient</th>
+<th>Doctor</th>
+<th>Date</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+
+{% for p in prescriptions %}
+
+<tr>
+
+<td>{{ p.consultation.patient.full_name }}</td>
+
+<td>{{ p.consultation.doctor.full_name }}</td>
+
+<td>{{ p.created_at|date:"d M Y" }}</td>
+
+<td>{{ p.status }}</td>
+
+<td>
+
+<a href="{% url 'billing:create_invoice' p.pk %}" class="btn-primary">
+Create Invoice
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5">No pending prescriptions</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}  

@@ -1,0 +1,230 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Invoice{% endblock %}
+
+{% block sidebar %}
+<a href="{% url 'pharmacist_dashboard' %}">Dashboard</a>
+<a href="{% url 'billing:prescription_queue' %}">Prescriptions</a>
+<a href="{% url 'billing:invoice_list' %}">Invoices</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= Invoice Header ================= -->
+
+<div class="chart-card">
+
+<div style="display:flex; justify-content:space-between; align-items:center;">
+
+<div>
+
+<h2>Invoice {{ invoice.invoice_number }}</h2>
+
+<div class="invoice-meta">
+
+<p>
+<strong>Patient:</strong>
+{{ invoice.prescription.consultation.patient.full_name }}
+</p>
+
+<p>
+<strong>Doctor:</strong>
+{{ invoice.prescription.consultation.doctor.full_name }}
+</p>
+
+<p>
+<strong>Invoice Date:</strong>
+{{ invoice.created_at|date:"d M Y H:i" }}
+</p>
+
+<p>
+<strong>Status:</strong>
+<span class="status-badge">{{ invoice.status }}</span>
+</p>
+
+</div>
+
+</div>
+
+<div>
+
+<a href="{% url 'billing:invoice_pdf' invoice.pk %}" class="pdf-btn">
+Download PDF
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ================= Layout Wrapper ================= -->
+
+<div class="invoice-layout">
+
+
+<!-- ================= Medicines Table ================= -->
+
+<div class="chart-card">
+
+<h3>Medicines</h3>
+
+<table class="report-table">
+
+<thead>
+<tr>
+<th>#</th>
+<th>Medicine</th>
+<th>Quantity</th>
+<th>Unit Price</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for item in invoice.items.all %}
+
+<tr>
+
+<td>{{ forloop.counter }}</td>
+
+<td>
+
+<strong>{{ item.medicine.name }}</strong>
+
+{% if item.batch_allocations.all %}
+
+<div class="batch-info">
+
+{% for alloc in item.batch_allocations.all %}
+
+<div>
+Batch {{ alloc.batch.batch_number }} → {{ alloc.quantity }}
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</td>
+
+<td>{{ item.quantity }}</td>
+
+<td>₹ {{ item.price_at_sale }}</td>
+
+<td>₹ {{ item.total_with_tax }}</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5">No medicines in this invoice</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+
+<!-- ================= Invoice Summary ================= -->
+
+<div class="chart-card invoice-summary">
+
+<h3>Invoice Summary</h3>
+
+<div class="summary-row">
+<div>Subtotal</div>
+<div>₹ {{ invoice.subtotal_amount }}</div>
+</div>
+
+<div class="summary-row">
+<div>GST</div>
+<div>₹ {{ invoice.total_gst }}</div>
+</div>
+
+<div class="summary-row total-row">
+<div>Total Amount</div>
+<div>₹ {{ invoice.total_amount }}</div>
+</div>
+
+{% if invoice.status != "PAID" %}
+
+<div class="payment-container">
+
+<a href="{% url 'billing:add_payment' invoice.pk %}" class="btn-success">
+Receive Payment
+</a>
+
+</div>
+
+{% else %}
+
+<div class="paid-label">
+✔ Payment Completed
+</div>
+
+{% endif %}
+
+</div>
+
+
+</div>
+
+
+<!-- ================= Payment History ================= -->
+
+<div class="chart-card">
+
+<h3>Payments</h3>
+
+<table class="report-table">
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Method</th>
+<th>Amount</th>
+<th>Received By</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for payment in invoice.payments.all %}
+
+<tr>
+
+<td>{{ payment.created_at|date:"d M Y H:i" }}</td>
+
+<td>{{ payment.get_method_display }}</td>
+
+<td>₹ {{ payment.amount }}</td>
+
+<td>{{ payment.received_by.full_name }}</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="4">No payments recorded</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

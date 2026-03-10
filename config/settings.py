@@ -34,9 +34,10 @@ INSTALLED_APPS = [
     'accounts',
     'patients',
     'prescriptions',
-    'consultations',
+    'consultations',    
     'pharmacy',
     'billing',
+    'core',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -70,7 +71,7 @@ TEMPLATES = [
             ],
         },
     },
-]
+]   
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -127,6 +128,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 AUTHENTICATION_BACKENDS = [
@@ -137,7 +141,6 @@ LOGIN_REDIRECT_URL = '/accounts/redirect/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 LOGIN_URL = '/accounts/login/'
 
-STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 LOGIN_REDIRECT_URL = 'role_redirect'

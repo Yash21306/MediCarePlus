@@ -6,10 +6,12 @@ from patients.models import Patient   # assuming you have Patient model
 # =========================
 # Diagnosis Model
 # =========================
-class Diagnosis(models.Model):
+class DiagnosisMaster(models.Model):
+
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    is_common = models.BooleanField(default=False)  # For popular diseases
+
+    is_common = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

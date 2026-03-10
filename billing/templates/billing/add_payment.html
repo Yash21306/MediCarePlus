@@ -1,0 +1,39 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Receive Payment{% endblock %}
+
+{% block content %}
+
+<div class="chart-card">
+
+<h3>Payment - {{ invoice.invoice_number }}</h3>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<label>Amount</label>
+<input type="number" step="0.01" name="amount">
+
+<label>Method</label>
+
+<select name="method">
+
+<option value="CASH">Cash</option>
+<option value="UPI">UPI</option>
+<option value="CARD">Card</option>
+<option value="BANK">Bank Transfer</option>
+
+</select>
+
+<br><br>
+
+<button type="submit" class="btn-primary">
+Confirm Payment
+</button>
+
+</form>
+
+</div>
+
+{% endblock %}

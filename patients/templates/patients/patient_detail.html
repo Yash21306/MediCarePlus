@@ -1,54 +1,80 @@
-<h2>Patient Profile</h2>
+{% extends "dashboard_base.html" %}
 
-<div class="patient-card">
-    <h3>{{ patient.full_name }}</h3>
-    <p><strong>Age:</strong> {{ patient.age }}</p>
-    <p><strong>Gender:</strong> {{ patient.gender }}</p>
-    <p><strong>Phone:</strong> {{ patient.phone }}</p>
-    <p><strong>City:</strong> {{ patient.city }}</p>
-    <p><strong>Address:</strong> {{ patient.address }}</p>
-    <p><strong>Medical History:</strong> {{ patient.medical_history }}</p>
-</div>
+{% block page_title %}Patient Details{% endblock %}
 
-<hr>
+{% block sidebar %}
+<a href="{% url 'doctor_dashboard' %}">Dashboard</a>
+<a href="{% url 'patients:patient_list' %}" class="active">Patients</a>
+<a href="{% url 'consultations:consultation_list' %}">Consultations</a>
+{% endblock %}
 
-<div class="actions">
-    {% if user.role == "DOCTOR" %}
-        <a href="{% url 'consultation_create' patient.pk %}" class="btn btn-primary">
-            ➕ New Consultation
-        </a>
-    {% endif %}
-</div>
+{% block content %}
 
-<hr>
+<div class="chart-card">
 
-<h3>Consultation History</h3>
+<h3>👤 Patient Details</h3>
 
-<table>
-    <thead>
-        <tr>
-            <th>Visit Number</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Doctor</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for consultation in consultations %}
-        <tr>
-            <td>
-                <a href="{% url 'consultation_detail' consultation.pk %}">
-                    {{ consultation.visit_number }}
-                </a>
-            </td>            
-            <td>{{ consultation.consultation_date }}</td>
-            <td>{{ consultation.status }}</td>
-            <td>{{ consultation.doctor }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">No consultations yet.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
+<table class="report-table patient-detail-table">
+
+<tr>
+<th>Full Name</th>
+<td>{{ patient.full_name }}</td>
+</tr>
+
+<tr>
+<th>Age</th>
+<td>{{ patient.age }}</td>
+</tr>
+
+<tr>
+<th>Gender</th>
+<td>{{ patient.get_gender_display }}</td>
+</tr>
+
+<tr>
+<th>Phone</th>
+<td>{{ patient.phone }}</td>
+</tr>
+
+<tr>
+<th>City</th>
+<td>{{ patient.city }}</td>
+</tr>
+
+<tr>
+<th>Address</th>
+<td>{{ patient.address }}</td>
+</tr>
+
+<tr>
+<th>Medical History</th>
+<td>{{ patient.medical_history|default:"No history recorded" }}</td>
+</tr>
+
 </table>
+
+<hr style="margin:25px 0;">
+
+<div class="action-buttons">
+
+<a href="{% url 'consultations:start_consultation' patient.id %}" class="btn btn-consult">
+🩺 Start Consultation
+</a>
+
+<a href="{% url 'patients:edit_patient' patient.id %}" class="btn btn-edit">
+✏ Edit Patient
+</a>
+
+<a href="{% url 'patients:patient_purchase_history' patient.id %}" class="btn btn-primary">
+🧾 Purchase History
+</a>
+
+<a href="{% url 'patients:patient_list' %}" class="btn btn-secondary">
+← Back
+</a>
+
+</div>
+
+</div>
+
+{% endblock %}

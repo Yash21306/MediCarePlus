@@ -1,0 +1,103 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Sales Report{% endblock %}
+
+{% block sidebar %}
+{% if user.role == "ADMIN" %}
+<a href="{% url 'admin_dashboard' %}">Dashboard</a>
+{% else %}
+<a href="{% url 'pharmacist_dashboard' %}">Dashboard</a>
+{% endif %}
+<a href="{% url 'medicine_list' %}">Medicines</a>
+<a href="{% url 'low_stock_medicines' %}">Low Stock</a>
+<a href="{% url 'near_expiry_batches' %}">Near Expiry</a>
+<a href="{% url 'expired_batches' %}">Expired</a>
+<a href="{% url 'billing:sales_report' %}" class="active">Sales Report</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-card">
+    <h3>Filter Sales</h3>
+
+    <form method="get" style="margin-bottom:20px;">
+        <input type="date" name="start_date" value="{{ start_date }}">
+        <input type="date" name="end_date" value="{{ end_date }}">
+        <button type="submit">Filter</button>
+    </form>
+</div>
+
+
+<div class="dashboard-card">
+    <h3>Invoice Sales</h3>
+
+    <table class="sales-table">
+
+    <thead>
+    <tr>
+    <th>#</th>
+    <th>Date</th>
+    <th>Amount</th>
+    <th>Status</th>
+    <th>PDF</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    {% for invoice in invoices %}
+
+    <tr>
+
+    <td>#{{ invoice.id }}</td>
+    <td>{{ invoice.created_at|date:"d M Y" }}</td>
+    <td>₹ {{ invoice.total_amount }}</td>
+
+    <td>
+    <span class="paid">PAID</span>
+    </td>
+
+    <td>
+    <a href="{% url 'billing:invoice_pdf' invoice.id %}" class="pdf-btn">
+    Download
+    </a>
+    </td>
+
+    </tr>
+
+    {% endfor %}
+
+    </tbody>
+    </table>
+</div>
+
+
+<div class="dashboard-card">
+    <h3>Top Selling Medicines</h3>
+
+    <table class="sales-table">
+
+    <thead>
+    <tr>
+    <th>Medicine</th>
+    <th>Total Sold</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    {% for med in top_medicines %}
+
+    <tr>
+    <td>{{ med.prescription_item__medicine__name }}</td>
+    <td>{{ med.total_sold }}</td>
+    </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+    </table>
+</div>
+
+{% endblock %}

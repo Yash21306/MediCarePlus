@@ -16,11 +16,26 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('pharmacy.urls')),
+
+    # AUTH + HOME
     path('', include('accounts.urls')),
+
+    # MODULES
     path('patients/', include('patients.urls')),
+    path('consultations/', include('consultations.urls')),
+    path('pharmacy/', include('pharmacy.urls')),
+    path('billing/', include('billing.urls')),
+    path('core/', include('core.urls')),
+
+    # Django built-in auth
     path('accounts/', include('django.contrib.auth.urls')),
-]   
+]
+
+# Serve uploaded files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

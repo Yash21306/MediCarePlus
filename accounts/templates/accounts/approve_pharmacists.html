@@ -1,0 +1,85 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Approve Pharmacists{% endblock %}
+
+{% block sidebar %}
+<a href="{% url 'admin_dashboard' %}">Dashboard</a>
+<a href="{% url 'approve_doctors' %}">Approve Doctors</a>
+<a href="{% url 'approve_pharmacists' %}" class="active">Approve Pharmacists</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-card">
+
+<h3>Pending Pharmacist Approvals</h3>
+
+<table class="report-table">
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Phone</th>
+<th>City</th>
+<th>License</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for pharmacist in pharmacists %}
+
+<tr>
+<td>{{ pharmacist.full_name }}</td>
+<td>{{ pharmacist.email }}</td>
+<td>{{ pharmacist.phone }}</td>
+<td>{{ pharmacist.city }}</td>
+<td>{{ pharmacist.license_number }}</td>
+<td>
+<span class="status-pending">Pending</span>
+</td>
+
+<td>
+{% if pharmacist.certificate %}
+<a href="{{ pharmacist.certificate.url }}" target="_blank" class="view-btn">
+View Certificate
+</a>
+{% else %}
+No Certificate
+{% endif %}
+
+<form method="post" action="{% url 'approve_user' pharmacist.id %}" style="display:inline;">
+{% csrf_token %}
+<button type="submit" class="approve-btn">
+Approve
+</button>
+</form>
+
+<form method="post" action="{% url 'reject_user' pharmacist.id %}">
+{% csrf_token %}
+<button type="submit" class="reject-btn">
+Reject
+</button>
+</form>
+
+</td>
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="7">No pharmacists waiting for approval.</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

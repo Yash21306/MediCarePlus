@@ -1,0 +1,114 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Patients{% endblock %}
+
+{% block sidebar %}
+
+<a href="{% url 'doctor_dashboard' %}">Dashboard</a> <a href="{% url 'patients:patient_list' %}" class="active">Patients</a> <a href="{% url 'consultations:consultation_list' %}">Consultations</a>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="chart-card">
+
+<h3>👨‍👩‍👧 My Patients</h3>
+
+<a href="{% url 'patients:add_patient' %}" class="btn btn-primary">
+➕ Add Patient
+</a>
+
+<hr style="margin:20px 0; opacity:0.2;">
+
+<form method="GET" class="search-bar">
+
+<input
+type="text"
+name="q"
+placeholder="Search by name, phone"
+value="{{ request.GET.q }}"
+class="search-input"
+
+>
+
+<button type="submit" class="btn btn-primary">
+🔎 Search
+</button>
+
+</form>
+
+<p style="margin-top:15px;">
+Total Patients: <strong>{{ patients.count }}</strong>
+</p>
+
+<table class="report-table">
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Age</th>
+<th>Phone</th>
+<th>City</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for patient in patients %}
+
+<tr>
+
+<td>
+<a href="{% url 'patients:patient_detail' patient.pk %}" class="patient-link">
+{{ patient.full_name }}
+</a>
+</td>
+
+<td>{{ patient.age }}</td>
+
+<td>{{ patient.phone }}</td>
+
+<td>
+{% if patient.city %}
+{{ patient.city.name }}, {{ patient.city.state }}, {{ patient.city.country }}
+{% else %}
+-
+{% endif %}
+</td>
+
+<td>
+
+<a href="{% url 'consultations:start_consultation' patient.pk %}" class="btn btn-consult">
+🩺 Consult
+</a>
+
+<a href="{% url 'patients:edit_patient' patient.pk %}" class="btn btn-edit">
+✏ Edit
+</a>
+
+<a href="{% url 'patients:delete_patient' patient.pk %}" class="btn btn-delete">
+🗑 Delete
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5" style="text-align:center; padding:20px;">
+No patients found
+</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

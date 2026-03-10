@@ -2,7 +2,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from billing.models import InvoiceLog
-from pharmacy.models import Batch
+from pharmacy.models import Batch, StockMovement
 from billing.models import InvoiceItemBatch
 from django.utils import timezone
 from consultations.models import Prescription
@@ -16,7 +16,18 @@ class InvoiceService:
         """
         Called after a payment is created.
         If invoice becomes fully paid → process it.
+        Only approved PHARMACIST can process payment.
         """
+
+        if not performed_by:
+            raise ValidationError("User required to process payment.")
+
+        if performed_by.role != "PHARMACIST":
+            raise ValidationError("Only pharmacist can process payment.")
+
+        if not performed_by.is_approved:
+            raise ValidationError("User is not approved.")
+
         total_paid = invoice.payments.aggregate(
             total=Sum("amount")
         )["total"] or 0
@@ -29,21 +40,27 @@ class InvoiceService:
 
         InvoiceService.pay_invoice(invoice, performed_by)
 
-
     @staticmethod
     @transaction.atomic
     def pay_invoice(invoice, performed_by=None):
         """
         Deduct stock using FIFO batches (expiry aware)
+        and log SALE stock movements.
         """
+
         if invoice.status == "PAID":
             return invoice
 
+        if not performed_by:
+            raise ValidationError("User required to process payment.")
+
         today = timezone.now().date()
 
-        items = invoice.items.select_related(
-            "medicine"
-        ).select_for_update()
+        items = (
+            invoice.items
+            .select_related("medicine")
+            .select_for_update()
+        )
 
         for item in items:
             required_qty = item.quantity
@@ -67,17 +84,28 @@ class InvoiceService:
                     f"Not enough non-expired stock for {item.medicine.name}"
                 )
 
-            # Deduct FIFO
+            # FIFO Deduction
             for batch in batches:
                 if required_qty <= 0:
                     break
 
                 deduct_qty = min(batch.quantity, required_qty)
 
+                # Deduct stock
                 batch.quantity -= deduct_qty
                 batch.save(update_fields=["quantity"])
 
-                # Record allocation
+                # 🔴 Log SALE movement (negative quantity)
+                StockMovement.objects.create(
+                    medicine=item.medicine,
+                    batch=batch,
+                    movement_type="SALE",
+                    quantity=-deduct_qty,
+                    reference=invoice.invoice_number,
+                    performed_by=performed_by
+                )
+
+                # Record batch allocation
                 InvoiceItemBatch.objects.create(
                     invoice_item=item,
                     batch=batch,
@@ -86,39 +114,48 @@ class InvoiceService:
 
                 required_qty -= deduct_qty
 
+        # Mark invoice paid
         invoice.status = "PAID"
         invoice.save(update_fields=["status"])
 
-        # Create audit log
+        # Create invoice audit log
         InvoiceLog.objects.create(
             invoice=invoice,
             action="PAID",
             performed_by=performed_by
         )
 
+        # Recalculate prescription + consultation status
         InvoiceService._recalculate_prescription_status(
             invoice.prescription
         )
 
         return invoice
 
-
     @staticmethod
     @transaction.atomic
     def cancel_invoice(invoice, performed_by=None):
         """
-        Cancel a PAID invoice and restore stock to original batches
+        Cancel a PAID invoice and restore stock to original batches.
+        Only approved PHARMACIST can cancel.
         """
+
+        if not performed_by:
+            raise ValidationError("User required to cancel invoice.")
+
+        if performed_by.role != "PHARMACIST":
+            raise ValidationError("Only pharmacist can cancel invoice.")
+
+        if not performed_by.is_approved:
+            raise ValidationError("User is not approved.")
+
         if invoice.status != "PAID":
-            raise ValidationError(
-                "Only PAID invoices can be cancelled."
-            )
+            raise ValidationError("Only PAID invoices can be cancelled.")
 
         # Lock invoice items
         items = invoice.items.select_for_update()
 
         for item in items:
-            # Get batch allocations
             allocations = item.batch_allocations.select_related(
                 "batch"
             ).select_for_update()
@@ -128,13 +165,11 @@ class InvoiceService:
                 batch.quantity += allocation.quantity
                 batch.save(update_fields=["quantity"])
 
-            # Delete allocation records
             allocations.delete()
 
         invoice.status = "CANCELLED"
         invoice.save(update_fields=["status"])
 
-        # Create audit log
         InvoiceLog.objects.create(
             invoice=invoice,
             action="CANCELLED",

@@ -1,0 +1,65 @@
+<h2>Purchase History</h2>
+
+<h4>Patient: {{ patient.full_name }}</h4>
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Invoice</th>
+<th>Medicine</th>
+<th>Batch</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for p in purchases %}
+
+<tr>
+
+<td>
+{{ p.invoice_item.invoice.created_at|date:"d M Y" }}
+</td>
+
+<td>
+{{ p.invoice_item.invoice.invoice_number }}
+</td>
+
+<td>
+{{ p.invoice_item.medicine.name }}
+</td>
+
+<td>
+{{ p.batch.batch_number }}
+</td>
+
+<td>
+{{ p.quantity }}
+</td>
+
+<td>
+₹ {{ p.invoice_item.price_at_sale }}
+</td>
+
+<td>
+₹ {{ p.invoice_item.total_with_tax }}
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="7">No purchases found.</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>

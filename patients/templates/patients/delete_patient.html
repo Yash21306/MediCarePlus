@@ -1,0 +1,38 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Delete Patient{% endblock %}
+
+{% block sidebar %}
+<a href="{% url 'doctor_dashboard' %}">Dashboard</a>
+<a href="{% url 'patients:patient_list' %}" class="active">Patients</a>
+<a href="{% url 'consultations:consultation_list' %}">Consultations</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="chart-card" style="max-width:600px;">
+
+<h3>⚠ Delete Patient</h3>
+
+<p>
+Are you sure you want to delete
+<strong>{{ patient.full_name }}</strong>?
+</p>
+
+<form method="post">
+{% csrf_token %}
+
+<button type="submit" class="btn btn-delete"
+onclick="return confirm('Are you sure you want to delete this patient?')">
+🗑 Delete Patient
+</button>
+
+<a href="{% url 'patients:patient_list' %}" class="btn btn-primary">
+Cancel
+</a>
+
+</form>
+
+</div>
+
+{% endblock %}

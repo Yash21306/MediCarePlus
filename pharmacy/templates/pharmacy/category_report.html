@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Category Sales Report</h2>
+
+<form method="get">
+    <label>Start Date: <input type="date" name="start_date" value="{{ start_date }}"></label>
+    <label>End Date: <input type="date" name="end_date" value="{{ end_date }}"></label>
+    <button type="submit">Filter</button>
+</form>
+
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Category</th>
+        <th>Total Quantity Sold</th>
+        <th>Total Sales Value</th>
+    </tr>
+    {% for row in report_data %}
+    <tr>
+        <td>{{ row.category }}</td>
+        <td>{{ row.total_quantity }}</td>
+        <td>{{ row.total_sales_value }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

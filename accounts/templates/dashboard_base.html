@@ -1,0 +1,153 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<title>MediCarePlus</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+
+<script src="{% static 'js/chart.js' %}"></script>
+
+</head>
+
+<body>
+
+<div class="dashboard-wrapper">
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+<div class="sidebar-logo">
+<span class="logo-dot"></span>
+MediCarePlus
+</div>
+
+<nav class="sidebar-nav">
+
+{% block sidebar %}
+<!-- Each page will override sidebar -->
+{% endblock %}
+
+</nav>
+
+<div class="sidebar-footer">
+
+<a href="{% url 'logout' %}" class="logout-btn">
+Logout
+</a>
+
+</div>
+
+</aside>
+
+
+<!-- MAIN CONTENT -->
+
+<main class="main-content">
+
+<header class="topbar">
+
+<div class="topbar-left">
+
+<h2 class="page-title">
+{% block page_title %}Dashboard{% endblock %}
+</h2>
+
+<p class="page-subtitle">
+Welcome back, {{ user.full_name }}
+</p>
+
+</div>
+
+<div class="notification-panel">
+
+<span>🔔</span>
+
+<ul id="notificationList">
+<li>Loading...</li>
+</ul>
+
+</div>
+
+</header>
+
+
+<section class="content-area">
+
+{% block content %}
+{% endblock %}
+
+</section>
+
+</main>
+
+</div>
+
+
+{% block extra_js %}
+
+<script>
+
+function updateRevenue(){
+
+fetch("/api/live-sales/", {
+credentials: "same-origin"
+})
+.then(res => res.json())
+.then(data => {
+
+const revenue = document.querySelector("#todayRevenue");
+
+if(revenue){
+revenue.innerText = "₹ " + data.today_revenue.toFixed(2);
+}
+
+});
+
+}
+
+setInterval(updateRevenue, 5000);
+
+
+function loadNotifications(){
+
+fetch("/core/notifications/")
+.then(res => res.json())
+.then(data => {
+
+const list = document.querySelector("#notificationList");
+
+if(!list) return;
+
+list.innerHTML = "";
+
+data.notifications.forEach(n => {
+
+const li = document.createElement("li");
+
+li.innerText = "🔔 " + n.title;
+
+list.appendChild(li);
+
+});
+
+});
+
+}
+
+setInterval(loadNotifications, 5000);
+
+loadNotifications();
+
+</script>
+
+{% endblock %}
+
+</body>
+</html>

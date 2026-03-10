@@ -1,0 +1,93 @@
+{% extends "dashboard_base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="content-area">
+
+
+    <div class="chart-card">
+        <h3>Monthly Profit Trend</h3>
+
+        <form method="get" style="margin-bottom:10px;">
+        <select name="period" onchange="this.form.submit()">
+        <option value="6" {% if selected_period == 6 %}selected{% endif %}>Last 6 Months</option>
+        <option value="12" {% if selected_period == 12 %}selected{% endif %}>Last 12 Months</option>
+        <option value="24" {% if selected_period == 24 %}selected{% endif %}>Last 24 Months</option>
+        </select>
+        </form>
+
+        <canvas id="profitChart" style="height:420px;"></canvas>
+    </div>
+
+</div>
+
+<script src="{% static 'js/chart.js' %}"></script>
+
+<script>
+const ctx = document.getElementById('profitChart').getContext('2d');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ labels|safe }}.map(m => m.replace(" ", "\n")),
+        datasets: [
+            {
+                label: "Revenue",
+                data: {{ revenue_values|safe }},
+                borderColor: "#00e676",
+                backgroundColor: "rgba(0,230,118,0.15)",
+                tension: 0.5,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: "#00e676",
+                borderWidth: 3
+            },
+            {
+                label: "Profit",
+                data: {{ profit_values|safe }},
+                borderColor: "#4da3ff",
+                backgroundColor: "rgba(77,163,255,0.15)",
+                tension: 0.5,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: "#4da3ff",
+                borderWidth: 3
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                labels: {
+                    color: "#ffffff"
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    color: "#cccccc"
+                },
+                grid: {
+                    color: "rgba(255,255,255,0.05)"
+                }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: "#cccccc"
+                },
+                grid: {
+                    color: "rgba(255,255,255,0.05)"
+                }
+            }
+        }
+    }
+});
+</script>
+
+{% endblock %}

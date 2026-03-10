@@ -1,0 +1,19 @@
+<h2>Supplier Purchase Report</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Supplier</th>
+        <th>Total Batches</th>
+        <th>Total Quantity</th>
+        <th>Total Purchase Value</th>
+    </tr>
+
+    {% for row in report_data %}
+    <tr>
+        <td>{{ row.supplier.name }}</td>
+        <td>{{ row.total_batches }}</td>
+        <td>{{ row.total_quantity }}</td>
+        <td>{{ row.total_value }}</td>
+    </tr>
+    {% endfor %}
+</table>

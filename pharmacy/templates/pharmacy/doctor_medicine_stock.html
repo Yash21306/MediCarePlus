@@ -1,0 +1,40 @@
+<h2>Medicine Stock</h2>
+
+<table>
+
+<tr>
+<th>Medicine</th>
+<th>Stock</th>
+<th>Low Stock</th>
+<th>Near Expiry</th>
+</tr>
+
+{% for item in stock_data %}
+
+<tr>
+
+<td>{{ item.medicine.name }}</td>
+
+<td>{{ item.stock }}</td>
+
+<td>
+{% if item.low_stock %}
+Yes
+{% else %}
+No
+{% endif %}
+</td>
+
+<td>
+{% if item.near_expiry %}
+Yes
+{% else %}
+No
+{% endif %}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>

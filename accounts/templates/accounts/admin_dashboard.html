@@ -1,0 +1,303 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block sidebar %}
+
+<a href="{% url 'admin_dashboard' %}" class="active">Dashboard</a>
+<a href="{% url 'approve_doctors' %}">Approve Doctors</a>
+<a href="{% url 'approve_pharmacists' %}">Approve Pharmacists</a>
+<a href="{% url 'billing:sales_report' %}">Sales Report</a>
+<a href="{% url 'billing:medicine_profit_report' %}">Profit Report</a>
+
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO CARD -->
+<div class="hero-card">
+    <div class="hero-label">Total System Revenue</div>
+    <div class="hero-amount">₹ {{ total_revenue }}</div>
+</div>
+
+<!-- BUSINESS INSIGHTS -->
+
+<div class="dashboard-grid small-cards">
+
+<div class="dashboard-card card-green">
+<h3>🪙 Today's Revenue</h3>
+<p id="todayRevenue">₹ {{ today_revenue }}</p>
+</div>
+
+<div class="dashboard-card card-teal">
+<h3>Today's Sales</h3>
+<p>{{ today_sales }}</p>
+</div>
+
+<div class="dashboard-card card-purple">
+<h3>📈 Monthly Growth</h3>
+<p>{{ monthly_growth }}%</p>
+</div>
+
+<div class="dashboard-card">
+<h3>📦 Stock Value</h3>
+<p>₹ {{ stock_value }}</p>
+</div>
+
+
+</div>
+
+
+<!-- SYSTEM OVERVIEW -->
+<div class="dashboard-grid small-cards">
+
+<div class="dashboard-card card-teal">
+<h3>👨‍⚕ Total Doctors</h3>
+<p>{{ total_doctors }}</p>
+</div>
+
+<div class="dashboard-card card-purple">
+<h3>💊 Total Pharmacists</h3>
+<p>{{ total_pharmacists }}</p>
+</div>
+
+<div class="dashboard-card card-green">
+<h3>🧑 Total Patients</h3>
+<p>{{ total_patients }}</p>
+</div>
+
+<div class="dashboard-card">
+<h3>💊 Total Medicines</h3>
+<p>{{ total_medicines }}</p>
+</div>
+
+</div>
+
+<!-- SYSTEM ALERTS -->
+
+<div class="chart-card">
+
+<h3>🚨 System Alerts</h3>
+
+<div class="summary-grid">
+
+<div class="summary-card">
+<h4>👨‍⚕ Pending Doctors</h4>
+<p>{{ pending_doctors }}</p>
+</div>
+
+<div class="summary-card">
+<h4>💊 Pending Pharmacists</h4>
+<p>{{ pending_pharmacists }}</p>
+</div>
+
+<div class="summary-card">
+<h4>📉 Low Stock Medicines</h4>
+<p>{{ low_stock_count }}</p>
+</div>
+
+<div class="summary-card">
+<h4>⚠ Near Expiry</h4>
+<p>{{ near_expiry_count }}</p>
+</div>
+
+<div class="summary-card">
+<h4>❌ Expired Batches</h4>
+<p>{{ expired_count }}</p>
+</div>
+
+</div>
+
+</div>
+
+<!-- SYSTEM HEALTH -->
+
+<div class="chart-card">
+
+<h3>System Health</h3>
+
+<div class="summary-grid">
+
+<div class="summary-card">
+<h4>⚠ Near Expiry Medicines</h4>
+<p>{{ near_expiry }}</p>
+</div>
+
+<div class="summary-card">
+<h4>❌ Expired Medicines</h4>
+<p>{{ expired }}</p>
+</div>
+
+<div class="summary-card">
+<h4>💊 Total Medicines</h4>
+<p>{{ total_medicines }}</p>
+</div>
+
+<div class="summary-card">
+<h4>⭐ Top Medicine</h3>
+<p>{{ most_profitable }}</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="chart-card">
+
+<h3>🧾 Recent Sales</h3>
+
+<table class="report-table">
+
+<tr>
+<th>Invoice</th>
+<th>Amount</th>
+<th>Date</th>
+</tr>
+
+{% for invoice in recent_invoices %}
+
+<tr>
+<td>#{{ invoice.id }}</td>
+<td>₹ {{ invoice.total_amount }}</td>
+<td>{{ invoice.created_at|date:"d M Y" }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+
+<!-- PROFIT TREND -->
+<div class="chart-card">
+<h3>📊 Monthly Revenue & Profit Trend</h3>
+
+<canvas id="profitChart" height="120"></canvas>
+
+</div>
+
+<!-- SYSTEM ACTIVITY -->
+
+<div class="chart-card">
+
+<h3>🧠 Recent System Activity</h3>
+
+<table class="report-table">
+
+<thead>
+<tr>
+<th>User</th>
+<th>Action</th>
+<th>Description</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for log in recent_activity %}
+
+<tr>
+<td>{{ log.user.full_name }}</td>
+<td>{{ log.get_action_type_display }}</td>
+<td>{{ log.description }}</td>
+<td>{{ log.created_at|date:"d M Y H:i" }}</td>
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="4">No activity recorded yet.</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<!-- INVENTORY INSIGHTS -->
+
+<div class="chart-card">
+
+<h3>📦 Inventory Intelligence</h3>
+
+<div class="summary-grid">
+
+<div class="summary-card">
+<h4>🔥 Fast Moving Medicines</h4>
+
+<ul>
+{% for med in fast_moving %}
+<li>{{ med.medicine__name }} ({{ med.total_sold }})</li>
+{% endfor %}
+</ul>
+
+</div>
+
+
+<div class="summary-card">
+<h4>🪦 Dead Stock</h4>
+
+<ul>
+{% for med in dead_stock %}
+<li>{{ med.name }}</li>
+{% empty %}
+<li>No dead stock</li>
+{% endfor %}
+</ul>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+{{ block.super }}
+
+<script>
+
+const labels = {{ profit_labels_json|safe }};
+const revenueData = {{ revenue_values_json|safe }};
+const profitData = {{ profit_values_json|safe }};
+
+const ctx = document.getElementById("profitChart");
+
+new Chart(ctx, {
+    type: "line",
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: "Revenue",
+                data: revenueData,
+                tension: 0.4
+            },
+            {
+                label: "Profit",
+                data: profitData,
+                tension: 0.4
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true
+            }
+        }
+    }
+});
+
+</script>
+
+{% endblock %}
